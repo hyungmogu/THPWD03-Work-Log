@@ -25,6 +25,7 @@
 
 import os
 import re
+import sys
 
 from model_service import ModelService
 from view_service import ViewService
@@ -66,7 +67,10 @@ class Program: # this is controller (from MVC architecture.)
             self.clear_screen()
             self.view_service.get_main(["Add Entry", "Search Existing Entry", "Quit"])
 
-            response = input("> ").strip().lower()
+            if sys.version_info < (3, 0):
+                response = raw_input("> ").strip().lower()
+            else:
+                response = input("> ").strip().lower()
 
             if not self.is_response_valid_main(response):
                 self.view_service.error_message = self.get_error_message(response)

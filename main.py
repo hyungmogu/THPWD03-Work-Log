@@ -40,18 +40,6 @@ class Program: # this is controller (from MVC architecture.)
         self.view_service = ViewService()
         self.model_service = ModelService()
 
-    def is_response_valid_main(self, response):
-        if len(re.findall(r"[^a-zA-Z]", response)) > 0:
-            return False
-
-        if len(response) != 1:
-            return False
-
-        if ord(response) < 97 or ord(response) >= 97 + len(["Add Entry", "Search Existing Entry", "Quit"]):
-            return False
-
-        return True
-
     def clear_screen(self):
         os.system('cls')  # For Windows
         os.system('clear')  # For Linux/OS X
@@ -60,20 +48,48 @@ class Program: # this is controller (from MVC architecture.)
         print("Thank you and take care")
         self.quit_program = True
 
+    def get_error_message_main(self, response, menu):
+        # 1. if menu is empty, then set menu is empty error
+        if len(menu) == 0:
+            error_message = "Sorry. There are no items in menu. Please exit program (Ctrl + c) and try again."
+
+        # 2. if menu has value other than what's available, set value error
+        if not len(response) == 1 or not (ord(response) >= 97 and ord(response) < 97 + len(menu)):
+            error_message = "Please enter correct value ({}-{})".format(chr(97), chr(97 + len(menu) - 1))
+
+        return error_message
+
+    def is_response_valid_main(self, response, menu):
+        # 1. if response contains characters other than letters, return false
+        if len(re.findall(r"[^a-zA-Z]", response)) > 0:
+            return False
+
+        # 2. if response contains characters of length greater than 1, then return false
+        if len(response) > 1:
+            return False
+
+        # 3. if response contains character of value less than ASCII value of 97 and greater than or equal to 97 + len(main_items), then return false
+        if ord(response) < 97 or ord(response) >= 97 + len(menu):
+            return False
+
+        # 4. otherwise, return true
+        return True
+
     def run_main(self):
         self.view_service.page_title = 'Main Page'
+        menu = self.model_service.get_menu('main')
 
         while not self.quit_program:
             self.clear_screen()
-            self.view_service.get_main(["Add Entry", "Search Existing Entry", "Quit"])
+            self.view_service.get_main(menu)
 
             if sys.version_info < (3, 0):
                 response = raw_input("> ").strip().lower()
             else:
                 response = input("> ").strip().lower()
 
-            if not self.is_response_valid_main(response):
-                self.view_service.error_message = self.get_error_message(response)
+            if not self.is_response_valid_main(response, menu):
+                self.view_service.error_message = self.get_error_message_main(response, menu)
                 continue
 
             if response == 'a':

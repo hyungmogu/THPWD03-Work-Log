@@ -26,6 +26,7 @@
 import os
 import re
 import sys
+import csv
 
 from model_service import ModelService
 from view_service import ViewService
@@ -104,7 +105,38 @@ class Program: # this is controller (from MVC architecture.)
 
 
     def run_add(self):
-        pass
+        self.view_service.page_title = 'Add Entry Page'
+        prompts = ["Task Name", "# of Minutes", "Additional Notes"]
+        output = {}
+
+        # 1. Walk through each prompt and store value in output
+
+        for prompt in prompts:
+            correct = False
+            while not correct:
+                self.clear_screen()
+                self.view_service.get_add(prompt)
+
+                if sys.version_info < (3, 0):
+                    response = raw_input("> ").strip().lower()
+                else:
+                    response = input("> ").strip().lower()
+
+                # if not self.is_response_valid_add(response, prompt):
+                #     self.view_service.error_message = self.get_error_message_add(response, prompt)
+                #     continue
+
+                output[prompt] = response
+                correct = True
+
+        # 2. Store / append output in csv
+        with open("work_log.csv", "a" ) as csvFile:
+            csvWriter = csv.DictWriter(csvFile, fieldnames=prompts)
+
+            csvWriter.writeheader()
+            csvWriter.writerow(output)
+
+        self.run_display()
 
     def run_search(self):
         pass

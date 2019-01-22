@@ -23,3 +23,14 @@ class ViewService:
                 print("{0}. {1}\n".format(chr(index+97), item))
 
         self._get_error_message()
+
+
+    def get_add(self, prompt):
+        self._get_header()
+
+        print("Please enter value to the following\n")
+
+        print ("{}:\n".format(prompt))
+
+        self._get_error_message()
+

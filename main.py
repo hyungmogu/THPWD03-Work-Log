@@ -66,7 +66,7 @@ class Program: # this is controller (from MVC architecture.)
             return False
 
         # 2. if response contains characters of length greater than 1, then return false
-        if len(response) > 1:
+        if len(response) > 1 or len(response) == 0:
             return False
 
         # 3. if response contains character of value less than ASCII value of 97 and greater than or equal to 97 + len(main_items), then return false

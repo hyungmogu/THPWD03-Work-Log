@@ -34,3 +34,16 @@ class ViewService:
 
         self._get_error_message()
 
+    def get_search_page(self, menu_items):
+        self._get_header()
+
+        print ("Please select one of the following options\n")
+
+        for index,item in enumerate(menu_items):
+            if index != len(menu_items) - 1:
+                print("{0}. {1}".format(chr(index+97), item))
+            else:
+                print("{0}. {1}\n".format(chr(index+97), item)) # this is to add extra space for prompt
+
+        self._get_error_message()
+

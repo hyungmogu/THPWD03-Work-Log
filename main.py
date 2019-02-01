@@ -32,7 +32,7 @@ from model_service import ModelService
 from view_service import ViewService
 
 # TODO: Generalize is_response_valid_main
-
+# TODO: Move prompt to object [maybe]
 class Program: # this is controller (from MVC architecture.)
     def __init__(self, model_service=ModelService, view_service=ViewService):
         self.quit_program = False
@@ -153,8 +153,69 @@ class Program: # this is controller (from MVC architecture.)
 
         # self.run_display()
 
+    def is_response_valid_search_page(self, response, menu):
+        # 1. if response contains characters other than letters, return false
+        if len(re.findall(r"[^a-zA-Z]", response)) > 0:
+            return False
+
+        # 2. if response contains characters of length greater than 1 or 0, then return false
+        if len(response) > 1 or len(response) == 0:
+            return False
+
+        # 3. if response contains character of value less than ASCII value of 97 and greater than or equal to 97 + len(main_items), then return false
+        if ord(response) < 97 or ord(response) >= 97 + len(menu):
+            return False
+
+        # 4. otherwise, return true
+        return True
+
+    def get_error_message_search_page(self, response, menu):
+        # 1. if menu is empty, then set menu is empty error
+        if len(menu) == 0:
+            error_message = "Sorry. There are no items in menu. Please exit program (Ctrl + c) and try again."
+
+        # 2. if menu has value other than what's available, set value error
+        if not len(response) == 1 or not (ord(response) >= 97 and ord(response) < 97 + len(menu)):
+            error_message = "Please enter correct value ({}-{})".format(chr(97), chr(97 + len(menu) - 1))
+
+        return error_message
+
     def run_search(self):
-        pass
+        self.view_service.page_title = 'Search Page'
+
+        exit_page = False
+        menu = self.model_service.get_menu('search_page')
+
+        while not exit_page:
+            self.clear_screen()
+            self.view_service.get_search_page(menu)
+
+            if sys.version_info < (3, 0):
+                response = raw_input("> ").strip().lower()
+            else:
+                response = input("> ").strip().lower()
+
+            if not self.is_response_valid_search_page(response, menu):
+                self.view_service.error_message = self.get_error_message_search_page(response, menu)
+                continue
+
+            if response == 'a':
+                self.run_search_by_date()
+
+            elif response == 'b':
+                self.run_search_by_time_spent()
+
+            elif response == 'c':
+                self.run_search_by_exact_search()
+
+            elif response == 'd':
+                self.run_find_by_the_pattern()
+
+            elif response == 'e':
+                exit_page = True
+                self.clear_screen()
+
+        self.run_main()
 
     def run_display(self):
         pass

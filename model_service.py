@@ -1,5 +1,7 @@
 class ModelService:
     menu_main = ["Add Entry", "Search Existing Entry", "Quit"]
+    menu_search_page = ["Find By Date", "Find by Time Spent", "Find by Exact Search", "Find by Pattern", "Return to Main"]
+
     def get_menu(self, name):
         output = []
 

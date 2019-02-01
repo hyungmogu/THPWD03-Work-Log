@@ -5,9 +5,9 @@
 
         1. [x] As a user of the script, I should be prompted with a menu to choose whether to add a new entry or lookup previous entries.
 
-        2. [] As a user of the script, if I choose to enter a new work log, I should be able to provide a task name, a number of minutes spent working on it, and any additional notes I want to record.
+        2. [x] As a user of the script, if I choose to enter a new work log, I should be able to provide a task name, a number of minutes spent working on it, and any additional notes I want to record.
 
-        3. [] As a user of the script, if I choose to find a previous entry, I should be presented with four options:
+        3. [x] As a user of the script, if I choose to find a previous entry, I should be presented with four options:
 
             a. find by date
             b. find by time spent
@@ -31,8 +31,8 @@ import csv
 from model_service import ModelService
 from view_service import ViewService
 
-# TODO: Generalize is_response_valid_main
-# TODO: Move menu items (i.e. ["Add Entry", "Search Existing Entry", "Quit"]) to ModelService
+# TODO: Generalize is_response_valid_main_page
+# TODO: Move prompt to object [maybe]
 
 class Program: # this is controller (from MVC architecture.)
     def __init__(self, model_service=ModelService, view_service=ViewService):
@@ -49,7 +49,7 @@ class Program: # this is controller (from MVC architecture.)
         print("Thank you and take care")
         self.quit_program = True
 
-    def get_error_message_main(self, response, menu):
+    def get_error_message_main_page(self, response, menu):
         # 1. if menu is empty, then set menu is empty error
         if len(menu) == 0:
             error_message = "Sorry. There are no items in menu. Please exit program (Ctrl + c) and try again."
@@ -60,13 +60,13 @@ class Program: # this is controller (from MVC architecture.)
 
         return error_message
 
-    def is_response_valid_main(self, response, menu):
+    def is_response_valid_main_page(self, response, menu):
         # 1. if response contains characters other than letters, return false
         if len(re.findall(r"[^a-zA-Z]", response)) > 0:
             return False
 
         # 2. if response contains characters of length greater than 1, then return false
-        if len(response) > 1:
+        if len(response) > 1 or len(response) == 0:
             return False
 
         # 3. if response contains character of value less than ASCII value of 97 and greater than or equal to 97 + len(main_items), then return false
@@ -76,35 +76,51 @@ class Program: # this is controller (from MVC architecture.)
         # 4. otherwise, return true
         return True
 
-    def run_main(self):
+    def run_main_page(self):
         self.view_service.page_title = 'Main Page'
         menu = self.model_service.get_menu('main')
 
         while not self.quit_program:
             self.clear_screen()
-            self.view_service.get_main(menu)
+            self.view_service.get_main_page(menu)
 
             if sys.version_info < (3, 0):
                 response = raw_input("> ").strip().lower()
             else:
                 response = input("> ").strip().lower()
 
-            if not self.is_response_valid_main(response, menu):
-                self.view_service.error_message = self.get_error_message_main(response, menu)
+            if not self.is_response_valid_main_page(response, menu):
+                self.view_service.error_message = self.get_error_message_main_page(response, menu)
                 continue
 
             if response == 'a':
-                self.run_add()
+                self.run_add_page()
 
             elif response == 'b':
-                self.run_search()
+                self.run_search_page()
 
             else:
                 self.clear_screen()
                 self.quit()
 
+    def is_response_valid_add_page(self, response, prompt):
+        if prompt != 'Additional Notes' and response.strip() == '':
+            return False
 
-    def run_add(self):
+        if prompt == '# of Minutes' and re.search(r'[^0-9]', response) != None:
+            return False
+
+        return True
+
+    def get_error_message_add_page(self, response, prompt):
+        if prompt != 'Additional Notes' and response.strip() == '':
+            return 'Please enter non-empty value'
+
+        if prompt == '# of Minutes':
+            return 'Please enter integer value between 0-60'
+
+
+    def run_add_page(self):
         self.view_service.page_title = 'Add Entry Page'
         prompts = ["Task Name", "# of Minutes", "Additional Notes"]
         output = {}
@@ -115,16 +131,16 @@ class Program: # this is controller (from MVC architecture.)
             correct = False
             while not correct:
                 self.clear_screen()
-                self.view_service.get_add(prompt)
+                self.view_service.get_add_page(prompt)
 
                 if sys.version_info < (3, 0):
                     response = raw_input("> ").strip().lower()
                 else:
                     response = input("> ").strip().lower()
 
-                # if not self.is_response_valid_add(response, prompt):
-                #     self.view_service.error_message = self.get_error_message_add(response, prompt)
-                #     continue
+                if not self.is_response_valid_add_page(response, prompt):
+                    self.view_service.error_message = self.get_error_message_add_page(response, prompt)
+                    continue
 
                 output[prompt] = response
                 correct = True
@@ -136,15 +152,76 @@ class Program: # this is controller (from MVC architecture.)
             csvWriter.writeheader()
             csvWriter.writerow(output)
 
-        self.run_display()
+        # self.run_display()
 
-    def run_search(self):
-        pass
+    def is_response_valid_search_page(self, response, menu):
+        # 1. if response contains characters other than letters, return false
+        if len(re.findall(r"[^a-zA-Z]", response)) > 0:
+            return False
 
-    def run_display(self):
+        # 2. if response contains characters of length greater than 1 or 0, then return false
+        if len(response) > 1 or len(response) == 0:
+            return False
+
+        # 3. if response contains character of value less than ASCII value of 97 and greater than or equal to 97 + len(main_items), then return false
+        if ord(response) < 97 or ord(response) >= 97 + len(menu):
+            return False
+
+        # 4. otherwise, return true
+        return True
+
+    def get_error_message_search_page(self, response, menu):
+        # 1. if menu is empty, then set menu is empty error
+        if len(menu) == 0:
+            error_message = "Sorry. There are no items in menu. Please exit program (Ctrl + c) and try again."
+
+        # 2. if menu has value other than what's available, set value error
+        if not len(response) == 1 or not (ord(response) >= 97 and ord(response) < 97 + len(menu)):
+            error_message = "Please enter correct value ({}-{})".format(chr(97), chr(97 + len(menu) - 1))
+
+        return error_message
+
+    def run_search_page(self):
+        self.view_service.page_title = 'Search Page'
+
+        exit_page = False
+        menu = self.model_service.get_menu('search_page')
+
+        while not exit_page:
+            self.clear_screen()
+            self.view_service.get_search_page(menu)
+
+            if sys.version_info < (3, 0):
+                response = raw_input("> ").strip().lower()
+            else:
+                response = input("> ").strip().lower()
+
+            if not self.is_response_valid_search_page(response, menu):
+                self.view_service.error_message = self.get_error_message_search_page(response, menu)
+                continue
+
+            if response == 'a':
+                self.run_search_page_by_date()
+
+            elif response == 'b':
+                self.run_search_page_by_time_spent()
+
+            elif response == 'c':
+                self.run_search_page_by_exact_search()
+
+            elif response == 'd':
+                self.run_find_by_the_pattern()
+
+            elif response == 'e':
+                exit_page = True
+                self.clear_screen()
+
+        self.run_main_page()
+
+    def run_display_page(self):
         pass
 
 
 if __name__ == "__main__":
     program = Program()
-    program.run_main()
+    program.run_main_page()

@@ -11,7 +11,7 @@ class ViewService:
             print("Error: {}".format(self.error_message))
             print("Please try again:")
 
-    def get_main(self, menu_items):
+    def get_main_page(self, menu_items):
         self._get_header()
 
         print("Please select an item from menu\n")
@@ -25,12 +25,25 @@ class ViewService:
         self._get_error_message()
 
 
-    def get_add(self, prompt):
+    def get_add_page(self, prompt_phrase):
         self._get_header()
 
         print("Please enter value to the following\n")
 
-        print ("{}:\n".format(prompt))
+        print ("{}:\n".format(prompt_phrase))
+
+        self._get_error_message()
+
+    def get_search_page(self, menu_items):
+        self._get_header()
+
+        print ("Please select one of the following options\n")
+
+        for index,item in enumerate(menu_items):
+            if index != len(menu_items) - 1:
+                print("{0}. {1}".format(chr(index+97), item))
+            else:
+                print("{0}. {1}\n".format(chr(index+97), item)) # this is to add extra space for prompt
 
         self._get_error_message()
 

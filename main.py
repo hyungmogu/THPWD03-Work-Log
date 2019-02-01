@@ -5,7 +5,7 @@
 
         1. [x] As a user of the script, I should be prompted with a menu to choose whether to add a new entry or lookup previous entries.
 
-        2. [] As a user of the script, if I choose to enter a new work log, I should be able to provide a task name, a number of minutes spent working on it, and any additional notes I want to record.
+        2. [x] As a user of the script, if I choose to enter a new work log, I should be able to provide a task name, a number of minutes spent working on it, and any additional notes I want to record.
 
         3. [] As a user of the script, if I choose to find a previous entry, I should be presented with four options:
 
@@ -32,7 +32,6 @@ from model_service import ModelService
 from view_service import ViewService
 
 # TODO: Generalize is_response_valid_main
-# TODO: Move menu items (i.e. ["Add Entry", "Search Existing Entry", "Quit"]) to ModelService
 
 class Program: # this is controller (from MVC architecture.)
     def __init__(self, model_service=ModelService, view_service=ViewService):
@@ -103,6 +102,22 @@ class Program: # this is controller (from MVC architecture.)
                 self.clear_screen()
                 self.quit()
 
+    def is_response_valid_add(self, response, prompt):
+        if prompt != 'Additional Notes' and response.strip() == '':
+            return False
+
+        if prompt == '# of Minutes' and re.search(r'[^0-9]', response) != None:
+            return False
+
+        return True
+
+    def get_error_message_add(self, response, prompt):
+        if prompt != 'Additional Notes' and response.strip() == '':
+            return 'Please enter non-empty value'
+
+        if prompt == '# of Minutes':
+            return 'Please enter integer value between 0-60'
+
 
     def run_add(self):
         self.view_service.page_title = 'Add Entry Page'
@@ -122,9 +137,9 @@ class Program: # this is controller (from MVC architecture.)
                 else:
                     response = input("> ").strip().lower()
 
-                # if not self.is_response_valid_add(response, prompt):
-                #     self.view_service.error_message = self.get_error_message_add(response, prompt)
-                #     continue
+                if not self.is_response_valid_add(response, prompt):
+                    self.view_service.error_message = self.get_error_message_add(response, prompt)
+                    continue
 
                 output[prompt] = response
                 correct = True
@@ -136,7 +151,7 @@ class Program: # this is controller (from MVC architecture.)
             csvWriter.writeheader()
             csvWriter.writerow(output)
 
-        self.run_display()
+        # self.run_display()
 
     def run_search(self):
         pass

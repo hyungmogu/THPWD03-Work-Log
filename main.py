@@ -46,7 +46,7 @@ class Program: # this is controller (from MVC architecture.)
         os.system('clear')  # For Linux/OS X
 
     def quit(self):
-        print("Thank you and take care")
+        print("Thank You and Take Care")
         self.quit_program = True
 
     def get_error_message_main_page(self, response, menu):

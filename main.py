@@ -46,7 +46,7 @@ class Program: # this is controller (from MVC architecture.)
         os.system('clear')  # For Linux/OS X
 
     def quit(self):
-        print("Thank you and take care")
+        print("Thank You and Take Care")
         self.quit_program = True
 
     def get_error_message_main_page(self, response, menu):
@@ -152,7 +152,7 @@ class Program: # this is controller (from MVC architecture.)
             csvWriter.writeheader()
             csvWriter.writerow(output)
 
-        # self.run_display()
+        self.run_display_page('add_page', [output])
 
     def is_response_valid_search_page(self, response, menu):
         # 1. if response contains characters other than letters, return false
@@ -218,8 +218,40 @@ class Program: # this is controller (from MVC architecture.)
 
         self.run_main_page()
 
-    def run_display_page(self):
-        pass
+    def run_display_page(self, path, items):
+        exit_page = False
+        self.view_service.page_title = 'Display Page'
+        index = 0
+
+        # make page to repeeat until quit page input is registered
+        while not exit_page:
+
+            # while quit page is not registered, allow users to navigate through items
+            self.clear_screen()
+            self.view_service.get_display_page(path, items, index)
+
+            if sys.version_info < (3, 0):
+                response = raw_input("> ").strip()
+            else:
+                response = input("> ").strip()
+
+            # if not self.is_response_valid_display_page(response, menu):
+            #     self.view_service.error_message = self.get_error_message_display_page(response, menu)
+            #     continue
+
+            if response == 'N':
+                index = index + 1 if (index+1) < len(items) else index
+
+            elif response == 'P':
+                index = index - 1 if (index - 1) >= 0 else index
+
+            elif response == 'R':
+                exit_page = True
+                self.clear_screen()
+
+
+        self.run_search_page() if path == 'search_page' else self.run_main_page()
+
 
 
 if __name__ == "__main__":

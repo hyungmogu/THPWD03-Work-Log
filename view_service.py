@@ -47,3 +47,20 @@ class ViewService:
 
         self._get_error_message()
 
+    def get_display_page(self, path, items, index):
+        self._get_header()
+        item = items[index]
+
+        print("Task Name: {}".format(item['Task Name']))
+        # print("Created Date: N/A")
+        print("Time Spent: {}".format(item['# of Minutes']))
+        print("Notes: {}\n".format(item['Additional Notes']))
+
+        if path == 'search_page':
+            print("Displaying Item ({} of {})\n".format(index, len(items)))
+            print("[N] Next Item [P] Previous Item [R] Return to Search Page\n")
+        else:
+            print("[R] Return to Main Page\n")
+
+        self._get_error_message()
+

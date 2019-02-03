@@ -218,12 +218,32 @@ class Program: # this is controller (from MVC architecture.)
 
         self.run_main_page()
 
+    def is_response_valid_display_page(self, response, path):
+        if path == 'search_page':
+            choices = ['N','P','R']
+        else:
+            choices = ['R']
+
+        # if the response is empty, warn user to type the correct value
+        if response not in choices:
+            return False
+        return True
+
+    def get_error_message_display_page(self, response, path):
+        if path == 'search_page':
+            choices = ['N','P','R']
+        else:
+            choices = ['R']
+
+        # if the response is empty, warn user to type the correct value
+        if response not in choices:
+            return "Please choose correct value(s) ({})".format(",".join(choices))
+
     def run_display_page(self, path, items):
         exit_page = False
         self.view_service.page_title = 'Display Page'
         index = 0
 
-        # make page to repeeat until quit page input is registered
         while not exit_page:
 
             # while quit page is not registered, allow users to navigate through items
@@ -235,9 +255,9 @@ class Program: # this is controller (from MVC architecture.)
             else:
                 response = input("> ").strip()
 
-            # if not self.is_response_valid_display_page(response, menu):
-            #     self.view_service.error_message = self.get_error_message_display_page(response, menu)
-            #     continue
+            if not self.is_response_valid_display_page(response, path):
+                self.view_service.error_message = self.get_error_message_display_page(response, path)
+                continue
 
             if response == 'N':
                 index = index + 1 if (index+1) < len(items) else index
@@ -251,8 +271,6 @@ class Program: # this is controller (from MVC architecture.)
 
 
         self.run_search_page() if path == 'search_page' else self.run_main_page()
-
-
 
 if __name__ == "__main__":
     program = Program()

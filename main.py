@@ -192,6 +192,30 @@ class Program: # this is controller (from MVC architecture.)
     def _get_csv_data(self):
         return self.model_service.get_csv_data()
 
+    def _get_error_message_search_by_date_page(self, response, message_type):
+        output = ''
+
+        if message_type == 'empty_data':
+            output = 'CSV data is empty. Please return to main, and add an item before trying again.'
+
+        elif message_type == 'not_valid_response':
+            # 1. check if correct format has been registered
+            if response.strip() === '' or re.match(r'\d{2}\-\d{2}\-\d{4}', response.strip()) is None:
+                output = 'Please enter item in format'
+
+            #2. check if entered value (day,month,year) is correct
+            day,month,year = response.split('-')
+            try:
+                datetime.datetime(int(year),int(month),int(day))
+            except ValueError as e:
+                e[0] = e[0].upper()
+                output = e
+
+        elif message_type == 'empty_results':
+            output = 'Retrieved result is empty. Please try different values'
+
+        return output
+
     def run_search_by_date_page(self):
         self.view_service.page_title = 'Search Page'
         data = self._get_csv_data()

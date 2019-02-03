@@ -27,6 +27,7 @@ import os
 import re
 import sys
 import csv
+import datetime
 
 from model_service import ModelService
 from view_service import ViewService
@@ -126,7 +127,6 @@ class Program: # this is controller (from MVC architecture.)
         output = {}
 
         # 1. Walk through each prompt and store value in output
-
         for prompt in prompts:
             correct = False
             while not correct:
@@ -145,9 +145,12 @@ class Program: # this is controller (from MVC architecture.)
                 output[prompt] = response
                 correct = True
 
+        output['Date'] = datetime.datetime.now().strftime('%B %d, %Y')
+        csvHeaders = ['Date'] + prompts
+
         # 2. Store / append output in csv
         with open("work_log.csv", "a" ) as csvFile:
-            csvWriter = csv.DictWriter(csvFile, fieldnames=prompts)
+            csvWriter = csv.DictWriter(csvFile, fieldnames=csvHeaders)
 
             csvWriter.writeheader()
             csvWriter.writerow(output)

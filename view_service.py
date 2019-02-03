@@ -52,7 +52,7 @@ class ViewService:
         item = items[index]
 
         print("Task Name: {}".format(item['Task Name']))
-        # print("Created Date: N/A")
+        print("Created Date: {}".format(item['Date']))
         print("Time Spent: {}".format(item['# of Minutes']))
         print("Notes: {}\n".format(item['Additional Notes']))
 

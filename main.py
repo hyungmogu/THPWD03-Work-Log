@@ -189,6 +189,59 @@ class Program: # this is controller (from MVC architecture.)
 
         return error_message
 
+    def _get_csv_data(self):
+        return self.model_service.get_csv_data()
+
+    def run_search_by_date_page(self):
+        self.view_service.page_title = 'Search Page'
+        data = self._get_csv_data()
+        exit_page = False
+        items = []
+
+        while not exit_page:
+            # 1. Clear screen
+            self._clear_screen()
+
+            #2. Load page
+            self.view_service.get_search_by_date_page()
+
+            #3. Load propt
+            if sys.version_info < (3, 0):
+                response = raw_input("> ").strip().lower()
+            else:
+                response = input("> ").strip().lower()
+
+            #4. If data is empty, then raise error saying data is empty, so try again once it has been added
+            if len(data.strip()) == 0:
+                self.view_service.error_message = self._get_error_message_search_by_date_page(response, 'empty_data')
+                continue
+
+            #5. if data not empty and response typed, check and see if typed value is correct
+            if not self._is_response_valid_search_by_date_page(response):
+                self.view_service.error_message = self._get_error_message_search_by_date_page(response, 'not_valid_response')
+                continue
+
+            # By this point, the response should be in the format of dd-mm-yyyy
+            # 6. If succeeds, then grab all items by the date
+            result = re.findall(r'''
+                ^(?P<date>{}\,
+                (?P<task_name>.*)\,
+                (?P<tme_amt>\d+)\,
+                (?P<notes>.*)\r$
+            '''.format(response), data, re.X|re.M)
+
+            # 7. Once grabbed, check and see if it has length equal to zero. If so, then raise error saying nothing found
+            if len(result) == 0:
+                self.view_service.error_message = self._get_error_message_search_by_date_page(response, 'empty_results')
+                continue
+
+            # 8. Otherwise, then exit page, and feed it to display page
+            items = [x.groupdict() for x in result]
+            exit_page = True
+
+        #9. bring data to display page
+        self.run_display_page('search_page', items)
+
     def run_search_page(self):
         self.view_service.page_title = 'Search Page'
 

@@ -47,6 +47,15 @@ class ViewService:
 
         self._get_error_message()
 
+    def get_search_by_date_page(self):
+        self._get_header()
+
+        print("Please enter full date (dd-dd-2019):\n")
+
+        print("[R] Return to Main Page\n")
+
+        self._get_error_message()
+
     def get_display_page(self, path, items, index):
         self._get_header()
         item = items[index]

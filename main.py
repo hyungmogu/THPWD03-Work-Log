@@ -27,6 +27,7 @@ import os
 import re
 import sys
 import csv
+import datetime
 
 from model_service import ModelService
 from view_service import ViewService
@@ -119,6 +120,10 @@ class Program: # this is controller (from MVC architecture.)
         if prompt == '# of Minutes':
             return 'Please enter integer value between 0-60'
 
+    def _file_is_empty(self, file):
+        if file.tell() == 0:
+            return True
+        return False
 
     def run_add_page(self):
         self.view_service.page_title = 'Add Entry Page'
@@ -126,7 +131,6 @@ class Program: # this is controller (from MVC architecture.)
         output = {}
 
         # 1. Walk through each prompt and store value in output
-
         for prompt in prompts:
             correct = False
             while not correct:
@@ -145,11 +149,15 @@ class Program: # this is controller (from MVC architecture.)
                 output[prompt] = response
                 correct = True
 
+        output['Date'] = datetime.datetime.now().strftime('%B %d, %Y')
+
         # 2. Store / append output in csv
         with open("work_log.csv", "a" ) as csvFile:
-            csvWriter = csv.DictWriter(csvFile, fieldnames=prompts)
+            csvHeaders = ['Date'] + prompts
+            csvWriter = csv.DictWriter(csvFile, fieldnames=csvHeaders)
 
-            csvWriter.writeheader()
+            if self._file_is_empty(csvFile):
+                csvWriter.writeheader()
             csvWriter.writerow(output)
 
         self.run_display_page('add_page', [output])
@@ -218,12 +226,32 @@ class Program: # this is controller (from MVC architecture.)
 
         self.run_main_page()
 
+    def is_response_valid_display_page(self, response, path):
+        if path == 'search_page':
+            choices = ['N','P','R']
+        else:
+            choices = ['R']
+
+        # if the response is empty, warn user to type the correct value
+        if response not in choices:
+            return False
+        return True
+
+    def get_error_message_display_page(self, response, path):
+        if path == 'search_page':
+            choices = ['N','P','R']
+        else:
+            choices = ['R']
+
+        # if the response is empty, warn user to type the correct value
+        if response not in choices:
+            return "Please choose correct value(s) ({})".format(",".join(choices))
+
     def run_display_page(self, path, items):
         exit_page = False
         self.view_service.page_title = 'Display Page'
         index = 0
 
-        # make page to repeeat until quit page input is registered
         while not exit_page:
 
             # while quit page is not registered, allow users to navigate through items
@@ -235,9 +263,9 @@ class Program: # this is controller (from MVC architecture.)
             else:
                 response = input("> ").strip()
 
-            # if not self.is_response_valid_display_page(response, menu):
-            #     self.view_service.error_message = self.get_error_message_display_page(response, menu)
-            #     continue
+            if not self.is_response_valid_display_page(response, path):
+                self.view_service.error_message = self.get_error_message_display_page(response, path)
+                continue
 
             if response == 'N':
                 index = index + 1 if (index+1) < len(items) else index
@@ -251,8 +279,6 @@ class Program: # this is controller (from MVC architecture.)
 
 
         self.run_search_page() if path == 'search_page' else self.run_main_page()
-
-
 
 if __name__ == "__main__":
     program = Program()

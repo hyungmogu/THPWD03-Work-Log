@@ -120,6 +120,10 @@ class Program: # this is controller (from MVC architecture.)
         if prompt == '# of Minutes':
             return 'Please enter integer value between 0-60'
 
+    def _file_is_empty(self, file):
+        if file.tell() == 0:
+            return True
+        return False
 
     def run_add_page(self):
         self.view_service.page_title = 'Add Entry Page'
@@ -146,13 +150,14 @@ class Program: # this is controller (from MVC architecture.)
                 correct = True
 
         output['Date'] = datetime.datetime.now().strftime('%B %d, %Y')
-        csvHeaders = ['Date'] + prompts
 
         # 2. Store / append output in csv
         with open("work_log.csv", "a" ) as csvFile:
+            csvHeaders = ['Date'] + prompts
             csvWriter = csv.DictWriter(csvFile, fieldnames=csvHeaders)
 
-            csvWriter.writeheader()
+            if self._file_is_empty(csvFile):
+                csvWriter.writeheader()
             csvWriter.writerow(output)
 
         self.run_display_page('add_page', [output])

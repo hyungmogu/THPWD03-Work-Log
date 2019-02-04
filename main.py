@@ -32,7 +32,7 @@ import datetime
 from model_service import ModelService
 from view_service import ViewService
 
-# TODO: Generalize is_response_valid_main_page
+# TODO: Generalize is_response_valid method
 # TODO: Move prompt to object [maybe]
 
 class Program: # this is controller (from MVC architecture.)
@@ -42,15 +42,15 @@ class Program: # this is controller (from MVC architecture.)
         self.view_service = ViewService()
         self.model_service = ModelService()
 
-    def clear_screen(self):
+    def _clear_screen(self):
         os.system('cls')  # For Windows
         os.system('clear')  # For Linux/OS X
 
-    def quit(self):
+    def _quit(self):
         print("Thank You and Take Care")
         self.quit_program = True
 
-    def get_error_message_main_page(self, response, menu):
+    def _get_error_message_main_page(self, response, menu):
         # 1. if menu is empty, then set menu is empty error
         if len(menu) == 0:
             error_message = "Sorry. There are no items in menu. Please exit program (Ctrl + c) and try again."
@@ -61,7 +61,7 @@ class Program: # this is controller (from MVC architecture.)
 
         return error_message
 
-    def is_response_valid_main_page(self, response, menu):
+    def _is_response_valid_main_page(self, response, menu):
         # 1. if response contains characters other than letters, return false
         if len(re.findall(r"[^a-zA-Z]", response)) > 0:
             return False
@@ -82,7 +82,7 @@ class Program: # this is controller (from MVC architecture.)
         menu = self.model_service.get_menu('main')
 
         while not self.quit_program:
-            self.clear_screen()
+            self._clear_screen()
             self.view_service.get_main_page(menu)
 
             if sys.version_info < (3, 0):
@@ -90,8 +90,8 @@ class Program: # this is controller (from MVC architecture.)
             else:
                 response = input("> ").strip().lower()
 
-            if not self.is_response_valid_main_page(response, menu):
-                self.view_service.error_message = self.get_error_message_main_page(response, menu)
+            if not self._is_response_valid_main_page(response, menu):
+                self.view_service.error_message = self._get_error_message_main_page(response, menu)
                 continue
 
             if response == 'a':
@@ -101,10 +101,10 @@ class Program: # this is controller (from MVC architecture.)
                 self.run_search_page()
 
             else:
-                self.clear_screen()
-                self.quit()
+                self._clear_screen()
+                self._quit()
 
-    def is_response_valid_add_page(self, response, prompt):
+    def _is_response_valid_add_page(self, response, prompt):
         if prompt != 'Additional Notes' and response.strip() == '':
             return False
 
@@ -113,7 +113,7 @@ class Program: # this is controller (from MVC architecture.)
 
         return True
 
-    def get_error_message_add_page(self, response, prompt):
+    def _get_error_message_add_page(self, response, prompt):
         if prompt != 'Additional Notes' and response.strip() == '':
             return 'Please enter non-empty value'
 
@@ -134,7 +134,7 @@ class Program: # this is controller (from MVC architecture.)
         for prompt in prompts:
             correct = False
             while not correct:
-                self.clear_screen()
+                self._clear_screen()
                 self.view_service.get_add_page(prompt)
 
                 if sys.version_info < (3, 0):
@@ -142,14 +142,14 @@ class Program: # this is controller (from MVC architecture.)
                 else:
                     response = input("> ").strip().lower()
 
-                if not self.is_response_valid_add_page(response, prompt):
-                    self.view_service.error_message = self.get_error_message_add_page(response, prompt)
+                if not self._is_response_valid_add_page(response, prompt):
+                    self.view_service.error_message = self._get_error_message_add_page(response, prompt)
                     continue
 
                 output[prompt] = response
                 correct = True
 
-        output['Date'] = datetime.datetime.now().strftime('%B %d, %Y')
+        output['Date'] = datetime.datetime.now().strftime('%d-%m-%Y')
 
         # 2. Store / append output in csv
         with open("work_log.csv", "a" ) as csvFile:
@@ -162,7 +162,7 @@ class Program: # this is controller (from MVC architecture.)
 
         self.run_display_page('add_page', [output])
 
-    def is_response_valid_search_page(self, response, menu):
+    def _is_response_valid_search_page(self, response, menu):
         # 1. if response contains characters other than letters, return false
         if len(re.findall(r"[^a-zA-Z]", response)) > 0:
             return False
@@ -178,7 +178,7 @@ class Program: # this is controller (from MVC architecture.)
         # 4. otherwise, return true
         return True
 
-    def get_error_message_search_page(self, response, menu):
+    def _get_error_message_search_page(self, response, menu):
         # 1. if menu is empty, then set menu is empty error
         if len(menu) == 0:
             error_message = "Sorry. There are no items in menu. Please exit program (Ctrl + c) and try again."
@@ -189,6 +189,112 @@ class Program: # this is controller (from MVC architecture.)
 
         return error_message
 
+    def _get_csv_data(self):
+        return self.model_service.get_csv_data()
+
+    def _get_error_message_search_by_date_page(self, response, message_type):
+        output = ''
+
+        if message_type == 'empty_data':
+            output = 'CSV data is empty. Please return to main, and add an item before trying again.'
+
+        elif message_type == 'not_valid_response':
+            # 1. check if correct format has been registered
+            if not response or len(response) == 0 or re.match(r'\d{2}\-\d{2}\-\d{4}', response.strip()) is None:
+                output = 'Please enter item in correct format (dd-mm-yyyy) or value (R)'
+            else:
+                day,month,year = response.split('-')
+                try:
+                    datetime.datetime(int(year),int(month),int(day))
+                except ValueError as e:
+                    output = str(e).capitalize()
+
+        elif message_type == 'empty_results':
+            output = 'Retrieved result is empty.'
+
+        return output
+
+    def _is_response_valid_search_by_date_page(self, response):
+        #1. check if response is non-empty
+        if not response or len(response) == 0:
+            return False
+
+        #2. if response is a single letter, then check to see if it has entered correct value corresponding menu
+        if len(response) == 1:
+            if response != 'R':
+                return False
+            return True
+        #3. if response is in date format, then check to see if it has a correct value
+        elif re.match(r'\d{2}\-\d{2}\-\d{4}', response) is not None:
+            day,month,year = response.split('-')
+            try:
+                datetime.datetime(int(year),int(month),int(day))
+            except ValueError:
+                return False
+
+            return True
+        #4. for other cases, return False
+        else:
+            return False
+
+    def run_search_by_date_page(self):
+        self.view_service.page_title = 'Search Page'
+        data = self._get_csv_data()
+        exit_page = False
+        items = []
+
+        while not exit_page:
+            # 1. Clear screen
+            self._clear_screen()
+
+            #2. Load page
+            self.view_service.get_search_by_date_page()
+
+            #3. Load prompt
+            if sys.version_info < (3, 0):
+                response = raw_input("> ").strip()
+            else:
+                response = input("> ").strip()
+
+            #4. If data is empty, then raise error saying data is empty, so try again once it has been added
+            if len(data.strip()) == 0:
+                self.view_service.error_message = self._get_error_message_search_by_date_page(response, 'empty_data')
+                continue
+
+            #5. if data not empty and response typed, check and see if typed value is correct
+            if not self._is_response_valid_search_by_date_page(response):
+                self.view_service.error_message = self._get_error_message_search_by_date_page(response, 'not_valid_response')
+                continue
+
+            # By this point, the response should be in the format of dd-mm-yyyy or R
+            # 6. if response is 'R', then return to search page
+            if response == 'R':
+                exit_page = True
+                continue
+
+            # 7. If not r and date in correct format, then grab all items by the date
+            results = re.finditer(r'''
+                ^(?P<date>{})\,
+                (?P<task_name>.*)\,
+                (?P<time_amt>\d+)\,
+                (?P<notes>.*)\r$
+            '''.format(response), data, re.X|re.M)
+
+            items = [x.groupdict() for x in results]
+
+            # 8. Once grabbed, check and see if it has length equal to zero. If so, then raise error saying nothing found
+            if len(items) == 0:
+                self.view_service.error_message = self._get_error_message_search_by_date_page(response, 'empty_results')
+                continue
+
+            exit_page = True
+
+        #8. bring data to display page
+        if response == 'R':
+            self.run_search_page()
+        else:
+            self.run_display_page('search_page', items)
+
     def run_search_page(self):
         self.view_service.page_title = 'Search Page'
 
@@ -196,7 +302,7 @@ class Program: # this is controller (from MVC architecture.)
         menu = self.model_service.get_menu('search_page')
 
         while not exit_page:
-            self.clear_screen()
+            self._clear_screen()
             self.view_service.get_search_page(menu)
 
             if sys.version_info < (3, 0):
@@ -204,29 +310,29 @@ class Program: # this is controller (from MVC architecture.)
             else:
                 response = input("> ").strip().lower()
 
-            if not self.is_response_valid_search_page(response, menu):
-                self.view_service.error_message = self.get_error_message_search_page(response, menu)
+            if not self._is_response_valid_search_page(response, menu):
+                self.view_service.error_message = self._get_error_message_search_page(response, menu)
                 continue
 
             if response == 'a':
-                self.run_search_page_by_date()
+                self.run_search_by_date_page()
 
             elif response == 'b':
-                self.run_search_page_by_time_spent()
+                self.run_search_by_time_spent_page()
 
             elif response == 'c':
-                self.run_search_page_by_exact_search()
+                self.run_search_by_exact_search_page()
 
             elif response == 'd':
-                self.run_find_by_the_pattern()
+                self.run_find_by_the_pattern_page()
 
             elif response == 'e':
                 exit_page = True
-                self.clear_screen()
+                self._clear_screen()
 
         self.run_main_page()
 
-    def is_response_valid_display_page(self, response, path):
+    def _is_response_valid_display_page(self, response, path):
         if path == 'search_page':
             choices = ['N','P','R']
         else:
@@ -237,7 +343,7 @@ class Program: # this is controller (from MVC architecture.)
             return False
         return True
 
-    def get_error_message_display_page(self, response, path):
+    def _get_error_message_display_page(self, response, path):
         if path == 'search_page':
             choices = ['N','P','R']
         else:
@@ -255,7 +361,7 @@ class Program: # this is controller (from MVC architecture.)
         while not exit_page:
 
             # while quit page is not registered, allow users to navigate through items
-            self.clear_screen()
+            self._clear_screen()
             self.view_service.get_display_page(path, items, index)
 
             if sys.version_info < (3, 0):
@@ -263,8 +369,8 @@ class Program: # this is controller (from MVC architecture.)
             else:
                 response = input("> ").strip()
 
-            if not self.is_response_valid_display_page(response, path):
-                self.view_service.error_message = self.get_error_message_display_page(response, path)
+            if not self._is_response_valid_display_page(response, path):
+                self.view_service.error_message = self._get_error_message_display_page(response, path)
                 continue
 
             if response == 'N':
@@ -275,7 +381,7 @@ class Program: # this is controller (from MVC architecture.)
 
             elif response == 'R':
                 exit_page = True
-                self.clear_screen()
+                self._clear_screen()
 
 
         self.run_search_page() if path == 'search_page' else self.run_main_page()

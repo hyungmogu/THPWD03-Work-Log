@@ -200,7 +200,7 @@ class Program: # this is controller (from MVC architecture.)
 
         elif message_type == 'not_valid_response':
             # 1. check if correct format has been registered
-            if response.strip() === '' or re.match(r'\d{2}\-\d{2}\-\d{4}', response.strip()) is None:
+            if response.strip() == '' or re.match(r'\d{2}\-\d{2}\-\d{4}', response.strip()) is None:
                 output = 'Please enter item in format'
 
             #2. check if entered value (day,month,year) is correct
@@ -300,16 +300,16 @@ class Program: # this is controller (from MVC architecture.)
                 continue
 
             if response == 'a':
-                self.run_search_page_by_date()
+                self.run_search_by_date_page()
 
             elif response == 'b':
-                self.run_search_page_by_time_spent()
+                self.run_search_by_time_spent_page()
 
             elif response == 'c':
-                self.run_search_page_by_exact_search()
+                self.run_search_by_exact_search_page()
 
             elif response == 'd':
-                self.run_find_by_the_pattern()
+                self.run_find_by_the_pattern_page()
 
             elif response == 'e':
                 exit_page = True

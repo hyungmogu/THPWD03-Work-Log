@@ -9,7 +9,7 @@ class ViewService:
     def _get_error_message(self):
         if self.error_message:
             print("Error: {}".format(self.error_message))
-            print("Please try again:")
+            print("Please try again:\n")
 
     def get_main_page(self, menu_items):
         self._get_header()

@@ -50,7 +50,7 @@ class ViewService:
     def get_search_by_date_page(self):
         self._get_header()
 
-        print("Please enter full date (dd-dd-2019):\n")
+        print("Please enter full date (dd-mm-yyyy):\n")
 
         print("[R] Return to Main Page\n")
 

@@ -200,35 +200,42 @@ class Program: # this is controller (from MVC architecture.)
 
         elif message_type == 'not_valid_response':
             # 1. check if correct format has been registered
-            if response.strip() == '' or re.match(r'\d{2}\-\d{2}\-\d{4}', response.strip()) is None:
-                output = 'Please enter item in format'
-
-            #2. check if entered value (day,month,year) is correct
-            day,month,year = response.split('-')
-            try:
-                datetime.datetime(int(year),int(month),int(day))
-            except ValueError as e:
-                e[0] = e[0].upper()
-                output = e
+            if not response or len(response) == 0 or re.match(r'\d{2}\-\d{2}\-\d{4}', response.strip()) is None:
+                output = 'Please enter item in correct format (dd-mm-yyyy) or value (R)'
+            else:
+                day,month,year = response.split('-')
+                try:
+                    datetime.datetime(int(year),int(month),int(day))
+                except ValueError as e:
+                    output = str(e).capitalize()
 
         elif message_type == 'empty_results':
-            output = 'Retrieved result is empty. Please try different values'
+            output = 'Retrieved result is empty.'
 
         return output
 
     def _is_response_valid_search_by_date_page(self, response):
-        #1. check if correct format has been registered
-        if response.strip() == '' or re.match(r'\d{2}\-\d{2}\-\d{4}', response.strip()) is None:
+        #1. check if response is non-empty
+        if not response or len(response) == 0:
             return False
 
-        #2. check if entered value (day,month,year) is correct
-        day,month,year = response.split('-')
-        try:
-            datetime.datetime(int(year),int(month),int(day))
-        except ValueError:
-            return False
+        #2. if response is a single letter, then check to see if it has entered correct value corresponding menu
+        if len(response) == 1:
+            if response != 'R':
+                return False
+            return True
+        #3. if response is in date format, then check to see if it has a correct value
+        elif re.match(r'\d{2}\-\d{2}\-\d{4}', response) is not None:
+            day,month,year = response.split('-')
+            try:
+                datetime.datetime(int(year),int(month),int(day))
+            except ValueError:
+                return False
 
-        return True
+            return True
+        #4. for other cases, return False
+        else:
+            return False
 
     def run_search_by_date_page(self):
         self.view_service.page_title = 'Search Page'
@@ -243,11 +250,11 @@ class Program: # this is controller (from MVC architecture.)
             #2. Load page
             self.view_service.get_search_by_date_page()
 
-            #3. Load propt
+            #3. Load prompt
             if sys.version_info < (3, 0):
-                response = raw_input("> ").strip().lower()
+                response = raw_input("> ").strip()
             else:
-                response = input("> ").strip().lower()
+                response = input("> ").strip()
 
             #4. If data is empty, then raise error saying data is empty, so try again once it has been added
             if len(data.strip()) == 0:
@@ -259,26 +266,34 @@ class Program: # this is controller (from MVC architecture.)
                 self.view_service.error_message = self._get_error_message_search_by_date_page(response, 'not_valid_response')
                 continue
 
-            # By this point, the response should be in the format of dd-mm-yyyy
-            # 6. If succeeds, then grab all items by the date
-            result = re.findall(r'''
-                ^(?P<date>{}\,
+            # By this point, the response should be in the format of dd-mm-yyyy or R
+            # 6. if response is 'R', then return to search page
+            if response == 'R':
+                exit_page = True
+                continue
+
+            # 7. If not r and date in correct format, then grab all items by the date
+            results = re.finditer(r'''
+                ^(?P<date>{})\,
                 (?P<task_name>.*)\,
-                (?P<tme_amt>\d+)\,
+                (?P<time_amt>\d+)\,
                 (?P<notes>.*)\r$
             '''.format(response), data, re.X|re.M)
 
-            # 7. Once grabbed, check and see if it has length equal to zero. If so, then raise error saying nothing found
-            if len(result) == 0:
+            items = [x.groupdict() for x in results]
+
+            # 8. Once grabbed, check and see if it has length equal to zero. If so, then raise error saying nothing found
+            if len(items) == 0:
                 self.view_service.error_message = self._get_error_message_search_by_date_page(response, 'empty_results')
                 continue
 
-            # 8. Otherwise, then exit page, and feed it to display page
-            items = [x.groupdict() for x in result]
             exit_page = True
 
-        #9. bring data to display page
-        self.run_display_page('search_page', items)
+        #8. bring data to display page
+        if response == 'R':
+            self.run_search_page()
+        else:
+            self.run_display_page('search_page', items)
 
     def run_search_page(self):
         self.view_service.page_title = 'Search Page'

@@ -127,7 +127,7 @@ class Program: # this is controller (from MVC architecture.)
 
     def run_add_page(self):
         self.view_service.page_title = 'Add Entry Page'
-        prompts = ["Task Name", "# of Minutes", "Additional Notes"]
+        prompts = [{'label': "Task Name", 'model': 'task_name'}, {'label': "# of Minutes", 'model': 'time_amt'}, {'label':"Additional Notes", 'model': 'notes'}]
         output = {}
 
         # 1. Walk through each prompt and store value in output
@@ -135,25 +135,25 @@ class Program: # this is controller (from MVC architecture.)
             correct = False
             while not correct:
                 self._clear_screen()
-                self.view_service.get_add_page(prompt)
+                self.view_service.get_add_page(prompt['label'])
 
                 if sys.version_info < (3, 0):
                     response = raw_input("> ").strip().lower()
                 else:
                     response = input("> ").strip().lower()
 
-                if not self._is_response_valid_add_page(response, prompt):
-                    self.view_service.error_message = self._get_error_message_add_page(response, prompt)
+                if not self._is_response_valid_add_page(response, prompt['label']):
+                    self.view_service.error_message = self._get_error_message_add_page(response, prompt['label'])
                     continue
 
-                output[prompt] = response
+                output[prompt['model']] = response
                 correct = True
 
-        output['Date'] = datetime.datetime.now().strftime('%d-%m-%Y')
+        output['date'] = datetime.datetime.now().strftime('%d-%m-%Y')
 
         # 2. Store / append output in csv
         with open("work_log.csv", "a" ) as csvFile:
-            csvHeaders = ['Date'] + prompts
+            csvHeaders = ['date'] + [x['model'] for x in prompts]
             csvWriter = csv.DictWriter(csvFile, fieldnames=csvHeaders)
 
             if self._file_is_empty(csvFile):
@@ -196,7 +196,7 @@ class Program: # this is controller (from MVC architecture.)
         output = ''
 
         if message_type == 'empty_data':
-            output = 'CSV data is empty. Please return to main, and add an item before trying again.'
+            output = 'CSV data is empty. Please return to main (R), and add an item.'
 
         elif message_type == 'not_valid_response':
             # 1. check if correct format has been registered
@@ -243,6 +243,9 @@ class Program: # this is controller (from MVC architecture.)
         exit_page = False
         items = []
 
+        if len(data.strip()) == 0:
+            self.view_service.error_message = self._get_error_message_search_by_date_page('', 'empty_data')
+
         while not exit_page:
             # 1. Clear screen
             self._clear_screen()
@@ -256,20 +259,20 @@ class Program: # this is controller (from MVC architecture.)
             else:
                 response = input("> ").strip()
 
-            #4. If data is empty, then raise error saying data is empty, so try again once it has been added
-            if len(data.strip()) == 0:
-                self.view_service.error_message = self._get_error_message_search_by_date_page(response, 'empty_data')
-                continue
-
-            #5. if data not empty and response typed, check and see if typed value is correct
+            #4. if data not empty and response typed, check and see if typed value is correct
             if not self._is_response_valid_search_by_date_page(response):
                 self.view_service.error_message = self._get_error_message_search_by_date_page(response, 'not_valid_response')
                 continue
 
             # By this point, the response should be in the format of dd-mm-yyyy or R
-            # 6. if response is 'R', then return to search page
+            # 5. if response is 'R', then return to search page
             if response == 'R':
                 exit_page = True
+                continue
+
+            #6. If data is empty, then raise error saying data is empty, so try again once it has been added
+            if len(data.strip()) == 0:
+                self.view_service.error_message = self._get_error_message_search_by_date_page('', 'empty_data')
                 continue
 
             # 7. If not r and date in correct format, then grab all items by the date

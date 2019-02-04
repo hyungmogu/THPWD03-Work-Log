@@ -149,7 +149,7 @@ class Program: # this is controller (from MVC architecture.)
                 output[prompt] = response
                 correct = True
 
-        output['Date'] = datetime.datetime.now().strftime('%B %d, %Y')
+        output['Date'] = datetime.datetime.now().strftime('%d-%m-%Y')
 
         # 2. Store / append output in csv
         with open("work_log.csv", "a" ) as csvFile:

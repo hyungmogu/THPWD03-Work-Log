@@ -67,7 +67,15 @@ class ViewService:
 
         if path == 'search_page':
             print("Displaying Item ({} of {})\n".format(index+1, len(items)))
-            print("[N] Next Item [P] Previous Item [R] Return to Search Page\n")
+
+            if len(items) == 1:
+                print("[R] Return to Search Page\n")
+            elif index == 0:
+                print("[N] Next Item [R] Return to Search Page\n")
+            elif index > 0 and index < len(items) - 1:
+                print("[N] Next Item [P] Previous Item [R] Return to Search Page\n")
+            else:
+                print("[P] Previous Item [R] Return to Search Page\n")
         else:
             print("[R] Return to Main Page\n")
 

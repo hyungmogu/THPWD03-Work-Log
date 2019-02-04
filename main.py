@@ -377,15 +377,20 @@ class Program: # this is controller (from MVC architecture.)
                 continue
 
             if response == 'N':
-                index = index + 1 if (index+1) < len(items) else index
+                if len(items) == 0 or index == len(items) - 1:
+                    continue
+                else:
+                    index = index + 1 if (index+1) < len(items) else index
 
             elif response == 'P':
-                index = index - 1 if (index - 1) >= 0 else index
+                if len(items) == 0 or index == 0:
+                    continue
+                else:
+                    index = index - 1 if (index - 1) >= 0 else index
 
             elif response == 'R':
                 exit_page = True
                 self._clear_screen()
-
 
         self.run_search_page() if path == 'search_page' else self.run_main_page()
 

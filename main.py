@@ -216,6 +216,20 @@ class Program: # this is controller (from MVC architecture.)
 
         return output
 
+    def _is_response_valid_search_by_date_page(self, response):
+        #1. check if correct format has been registered
+        if response.strip() == '' or re.match(r'\d{2}\-\d{2}\-\d{4}', response.strip()) is None:
+            return False
+
+        #2. check if entered value (day,month,year) is correct
+        day,month,year = response.split('-')
+        try:
+            datetime.datetime(int(year),int(month),int(day))
+        except ValueError:
+            return False
+
+        return True
+
     def run_search_by_date_page(self):
         self.view_service.page_title = 'Search Page'
         data = self._get_csv_data()

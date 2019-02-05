@@ -9,7 +9,7 @@ class ViewService:
     def _get_error_message(self):
         if self.error_message:
             print("Error: {}".format(self.error_message))
-            print("Please try again:")
+            print("Please try again:\n")
 
     def get_main_page(self, menu_items):
         self._get_header()
@@ -47,18 +47,35 @@ class ViewService:
 
         self._get_error_message()
 
+    def get_search_by_date_page(self):
+        self._get_header()
+
+        print("Please enter full date (dd-mm-yyyy):\n")
+
+        print("[R] Return to Main Page\n")
+
+        self._get_error_message()
+
     def get_display_page(self, path, items, index):
         self._get_header()
         item = items[index]
 
-        print("Task Name: {}".format(item['Task Name']))
-        print("Created Date: {}".format(item['Date']))
-        print("Time Spent: {}".format(item['# of Minutes']))
-        print("Notes: {}\n".format(item['Additional Notes']))
+        print("Task Name: {}".format(item['task_name']))
+        print("Created Date: {}".format(item['date']))
+        print("Time Spent: {}".format(item['time_amt']))
+        print("Notes: {}\n".format(item['notes']))
 
         if path == 'search_page':
-            print("Displaying Item ({} of {})\n".format(index, len(items)))
-            print("[N] Next Item [P] Previous Item [R] Return to Search Page\n")
+            print("Displaying Item ({} of {})\n".format(index+1, len(items)))
+
+            if len(items) == 1:
+                print("[R] Return to Search Page\n")
+            elif index == 0:
+                print("[N] Next Item [R] Return to Search Page\n")
+            elif index > 0 and index < len(items) - 1:
+                print("[N] Next Item [P] Previous Item [R] Return to Search Page\n")
+            else:
+                print("[P] Previous Item [R] Return to Search Page\n")
         else:
             print("[R] Return to Main Page\n")
 

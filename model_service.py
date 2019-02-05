@@ -9,3 +9,12 @@ class ModelService:
             output = getattr(self, 'menu_{}'.format(name))
 
         return output
+
+    def get_csv_data(self):
+        try:
+            with open('work_log.csv','r') as csvFile:
+                output = csvFile.read()
+        except IOError:
+            output = ''
+
+        return output

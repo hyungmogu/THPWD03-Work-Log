@@ -16,7 +16,7 @@
 
             NOTE:
             a) [x] When finding by date, I should be presented with a list of dates with entries and be able to choose one to see entries from.
-            b) [] When finding by time spent, I should be allowed to enter the number of minutes a task took and be able to choose one to see entries from.
+            b) [x] When finding by time spent, I should be allowed to enter the number of minutes a task took and be able to choose one to see entries from.
             c) [] When finding by an exact string, I should be allowed to enter a string and then be presented with entries containing that string in the task name or notes.
             d) [] When finding by a pattern, I should be allowed to enter a regular expression and then be presented with entries matching that pattern in their task name or notes.
             e) [x] When displaying the entries, the entries should be displayed in a readable format with the date, task name, time spent, and notes information.

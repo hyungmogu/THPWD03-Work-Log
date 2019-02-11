@@ -80,8 +80,9 @@ class Program: # this is controller (from MVC architecture.)
     def run_main_page(self):
         self.view_service.page_title = 'Main Page'
         menu = self.model_service.get_menu('main')
+        exit_page = False
 
-        while not self.quit_program:
+        while not exit_page:
             self._clear_screen()
             self.view_service.get_main_page(menu)
 
@@ -94,15 +95,19 @@ class Program: # this is controller (from MVC architecture.)
                 self.view_service.error_message = self._get_error_message_main_page(response, menu)
                 continue
 
-            if response == 'a':
-                self.run_add_page()
+            exit_page = True
 
-            elif response == 'b':
-                self.run_search_page()
 
-            else:
-                self._clear_screen()
-                self._quit()
+
+        if response == 'a':
+            self.run_add_page()
+
+        elif response == 'b':
+            self.run_search_page()
+
+        else:
+            self._clear_screen()
+            self._quit()
 
     def _is_response_valid_add_page(self, response, prompt):
         if prompt != 'Additional Notes' and response.strip() == '':
@@ -377,7 +382,7 @@ class Program: # this is controller (from MVC architecture.)
                 (?P<task_name>.*)\,
                 (?P<time_amt>{})\,
                 (?P<notes>.*)\r$
-            '''.format('60'), data, re.X|re.M)
+            '''.format(response), data, re.X|re.M)
 
             items = [x.groupdict() for x in results]
 
@@ -474,23 +479,24 @@ class Program: # this is controller (from MVC architecture.)
                 self.view_service.error_message = self._get_error_message_search_page(response, menu)
                 continue
 
-            if response == 'a':
-                self.run_search_by_date_page()
+            exit_page = True
 
-            elif response == 'b':
-                self.run_search_by_time_spent_page()
+        if response == 'a':
+            self.run_search_by_date_page()
 
-            elif response == 'c':
-                self.run_search_by_exact_search_page()
+        elif response == 'b':
+            self.run_search_by_time_spent_page()
 
-            elif response == 'd':
-                self.run_find_by_the_pattern_page()
+        elif response == 'c':
+            self.run_search_by_exact_search_page()
 
-            elif response == 'e':
-                exit_page = True
-                self._clear_screen()
+        elif response == 'd':
+            self.run_find_by_the_pattern_page()
 
-        self.run_main_page()
+        elif response == 'e':
+            self._clear_screen()
+            self.run_main_page()
+
 
     def _is_response_valid_display_page(self, response, path):
         if path == 'search_page':
@@ -532,23 +538,21 @@ class Program: # this is controller (from MVC architecture.)
                 self.view_service.error_message = self._get_error_message_display_page(response, path)
                 continue
 
-            if response == 'N':
-                if len(items) == 0 or index == len(items) - 1:
-                    continue
-                else:
-                    index = index + 1 if (index+1) < len(items) else index
+        if response == 'N':
+            if len(items) == 0 or index == len(items) - 1:
+                continue
+            else:
+                index = index + 1 if (index+1) < len(items) else index
 
-            elif response == 'P':
-                if len(items) == 0 or index == 0:
-                    continue
-                else:
-                    index = index - 1 if (index - 1) >= 0 else index
+        elif response == 'P':
+            if len(items) == 0 or index == 0:
+                continue
+            else:
+                index = index - 1 if (index - 1) >= 0 else index
 
-            elif response == 'R':
-                exit_page = True
-                self._clear_screen()
-
-        self.run_search_page() if path == 'search_page' else self.run_main_page()
+        elif response == 'R':
+            self._clear_screen()
+            self.run_search_page() if path == 'search_page' else self.run_main_page()
 
 if __name__ == "__main__":
     program = Program()

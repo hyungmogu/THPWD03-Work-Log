@@ -242,66 +242,139 @@ class Program: # this is controller (from MVC architecture.)
         else:
             return False
 
-        def run_search_by_date_page(self):
-            self.view_service.page_title = 'Search Page'
-            data = self._get_csv_data()
-            exit_page = False
-            items = []
+    def run_search_by_date_page(self):
+        self.view_service.page_title = 'Search Page'
+        data = self._get_csv_data()
+        exit_page = False
+        items = []
 
+        if len(data.strip()) == 0:
+            self.view_service.error_message = self._get_error_message_search_by_date_page('', 'empty_data')
+
+        while not exit_page:
+            # 1. Clear screen
+            self._clear_screen()
+
+            #2. Load page
+            self.view_service.get_search_by_date_page()
+
+            #3. Load prompt
+            if sys.version_info < (3, 0):
+                response = raw_input("> ").strip()
+            else:
+                response = input("> ").strip()
+
+            #4. if data not empty and response typed, check and see if typed value is correct
+            if not self._is_response_valid_search_by_date_page(response):
+                self.view_service.error_message = self._get_error_message_search_by_date_page(response, 'not_valid_response')
+                continue
+
+            # By this point, the response should be in the format of dd-mm-yyyy or R
+            # 5. if response is 'R', then return to search page
+            if response == 'R':
+                exit_page = True
+                continue
+
+            #6. If data is empty, then raise error saying data is empty, so try again once it has been added
             if len(data.strip()) == 0:
                 self.view_service.error_message = self._get_error_message_search_by_date_page('', 'empty_data')
+                continue
 
-            while not exit_page:
-                # 1. Clear screen
-                self._clear_screen()
+            # 7. If not r and date in correct format, then grab all items by the date
+            results = re.finditer(r'''
+                ^(?P<date>{})\,
+                (?P<task_name>.*)\,
+                (?P<time_amt>\d+)\,
+                (?P<notes>.*)\r$
+            '''.format(response), data, re.X|re.M)
 
-                #2. Load page
-                self.view_service.get_search_by_date_page()
+            items = [x.groupdict() for x in results]
 
-                #3. Load prompt
-                if sys.version_info < (3, 0):
-                    response = raw_input("> ").strip()
-                else:
-                    response = input("> ").strip()
+            # 8. Once grabbed, check and see if it has length equal to zero. If so, then raise error saying nothing found
+            if len(items) == 0:
+                self.view_service.error_message = self._get_error_message_search_by_date_page(response, 'empty_results')
+                continue
 
-                #4. if data not empty and response typed, check and see if typed value is correct
-                if not self._is_response_valid_search_by_date_page(response):
-                    self.view_service.error_message = self._get_error_message_search_by_date_page(response, 'not_valid_response')
-                    continue
-
-                # By this point, the response should be in the format of dd-mm-yyyy or R
-                # 5. if response is 'R', then return to search page
-                if response == 'R':
-                    exit_page = True
-                    continue
-
-                #6. If data is empty, then raise error saying data is empty, so try again once it has been added
-                if len(data.strip()) == 0:
-                    self.view_service.error_message = self._get_error_message_search_by_date_page('', 'empty_data')
-                    continue
-
-                # 7. If not r and date in correct format, then grab all items by the date
-                results = re.finditer(r'''
-                    ^(?P<date>{})\,
-                    (?P<task_name>.*)\,
-                    (?P<time_amt>\d+)\,
-                    (?P<notes>.*)\r$
-                '''.format(response), data, re.X|re.M)
-
-                items = [x.groupdict() for x in results]
-
-                # 8. Once grabbed, check and see if it has length equal to zero. If so, then raise error saying nothing found
-                if len(items) == 0:
-                    self.view_service.error_message = self._get_error_message_search_by_date_page(response, 'empty_results')
-                    continue
-
-                exit_page = True
+            exit_page = True
 
         #8. bring data to display page
         if response == 'R':
             self.run_search_page()
         else:
             self.run_display_page('search_page', items)
+
+    def _sanitize_response(self, response):
+        # for each reserved character, replace it with \Character or \s if it's a space
+        reserved_chrs = ['.','^',' ', '$', '*', '+', '?', '|']
+
+        for character in reserved_chrs:
+            if character in response:
+                response = re.sub('', '\{}'.format(character) if character != ' ' else '\s', response)
+        return response
+
+    def run_search_by_exact_search_page(self):
+        self.view_service.page_title = 'Search Page'
+        data = self._get_csv_data()
+        exit_page = False
+        items = []
+
+        if len(data.strip()) == 0:
+            self.view_service.error_message = self._get_error_message_search_by_exact_search_page('', 'empty_data')
+
+        while not exit_page:
+            # 1. Clear screen
+            self._clear_screen()
+
+            #2. Load page
+            self.view_service.get_search_by_exact_search_page()
+
+            #3. Load prompt
+            if sys.version_info < (3, 0):
+                response = raw_input("> ").strip()
+            else:
+                response = input("> ").strip()
+
+            #4. if data not empty and response typed, check and see if typed value is correct
+            if not self._is_response_valid_search_by_exact_search_page(response):
+                self.view_service.error_message = self._get_error_message_search_by_exact_search_page(response, 'not_valid_response')
+                continue
+
+            # 5. if response is 'R', then return to search page
+            if response == 'R':
+                exit_page = True
+                continue
+
+            #6. If data is empty, then raise error saying data is empty, so try again once it has been added
+            if len(data.strip()) == 0:
+                self.view_service.error_message = self._get_error_message_search_by_exact_search_page('', 'empty_data')
+                continue
+
+            # 8. Sanitize response if it has regex reserved characters
+            response = self._sanitize_response(response)
+
+            # 7. Grab all results by exact string in task name or notes
+            # results = re.finditer(r'''
+            #     ^(?P<date>\d{{2}}\-\d{{2}}\-\d{{4}})\,
+            #     (?P<task_name>.*)\,
+            #     (?P<time_amt>{})\,
+            #     (?P<notes>.*)\r$
+            # '''.format(response), data, re.X|re.M)
+
+            # items = [x.groupdict() for x in results]
+
+            # 8. Once grabbed, check and see if it has length equal to zero. If so, then raise error saying nothing found
+            if len(items) == 0:
+                self.view_service.error_message = self._get_error_message_search_by_exact_search_page(response, 'empty_results')
+                continue
+
+            exit_page = True
+
+        #8. bring data to display page
+        if response == 'R':
+            self.run_search_page()
+        else:
+            self.run_display_page('search_page', items)
+
 
     def _is_response_valid_search_by_time_page(self, response):
 

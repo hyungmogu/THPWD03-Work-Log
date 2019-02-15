@@ -303,14 +303,16 @@ class Program: # this is controller (from MVC architecture.)
         else:
             self.run_display_page('search_page', items)
 
-    def _sanitize_response(self, response):
+    def _sanitize_response(response):
         # for each reserved character, replace it with \Character or \s if it's a space
         reserved_chrs = ['.','^',' ', '$', '*', '+', '?', '|']
 
         for character in reserved_chrs:
-            if character in response:
-                response = re.sub('', '\{}'.format(character) if character != ' ' else '\s', response)
+            rgx = '\{}'.format(character)
+            response = re.sub(r'{}'.format(rgx), '\\{}'.format(character) if character != ' ' else '\\s', response)
         return response
+
+
 
     def run_search_by_exact_search_page(self):
         self.view_service.page_title = 'Search Page'

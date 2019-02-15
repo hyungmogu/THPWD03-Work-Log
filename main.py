@@ -303,14 +303,32 @@ class Program: # this is controller (from MVC architecture.)
         else:
             self.run_display_page('search_page', items)
 
-    def _sanitize_response(self, response):
+    def _sanitize_response(response):
         # for each reserved character, replace it with \Character or \s if it's a space
         reserved_chrs = ['.','^',' ', '$', '*', '+', '?', '|']
 
         for character in reserved_chrs:
-            if character in response:
-                response = re.sub('', '\{}'.format(character) if character != ' ' else '\s', response)
+            rgx = '\{}'.format(character)
+            response = re.sub(r'{}'.format(rgx), '\\{}'.format(character) if character != ' ' else '\\s', response)
         return response
+
+    def _is_response_valid_search_by_exact_search_page(self, response):
+        if response.strip() == '':
+            return False
+        return True
+
+    def _get_error_message_search_by_exact_search_page(self, response, error_type):
+        if error_type == 'empty_data':
+            output = 'CSV data is empty. Please return to main (R), and add an item.'
+
+        if error_type == 'not_valid_response':
+            output = 'Please enter item in correct format (non-negative integer) or value (R)'
+
+        if error_type == 'empty_results':
+            output = 'Retrieved result is empty.'
+
+        return output
+
 
     def run_search_by_exact_search_page(self):
         self.view_service.page_title = 'Search Page'

@@ -322,7 +322,7 @@ class Program: # this is controller (from MVC architecture.)
             output = 'CSV data is empty. Please return to main (R), and add an item.'
 
         if error_type == 'not_valid_response':
-            output = 'Please enter item in correct format (non-negative integer) or value (R)'
+            output = 'Please enter non-empty characters or value (R)'
 
         if error_type == 'empty_results':
             output = 'Retrieved result is empty.'

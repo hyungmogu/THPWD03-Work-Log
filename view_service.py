@@ -11,6 +11,9 @@ class ViewService:
             print("Error: {}".format(self.error_message))
             print("Please try again:\n")
 
+    def clear_error_message(self):
+        self.error_message = ''
+
     def get_main_page(self, menu_items):
         self._get_header()
 

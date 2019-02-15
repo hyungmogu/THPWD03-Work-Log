@@ -97,7 +97,7 @@ class Program: # this is controller (from MVC architecture.)
 
             exit_page = True
 
-
+        self.view_service.clear_error_message()
 
         if response == 'a':
             self.run_add_page()
@@ -153,6 +153,8 @@ class Program: # this is controller (from MVC architecture.)
 
                 output[prompt['model']] = response
                 correct = True
+
+            self.view_service.clear_error_message()
 
         output['date'] = datetime.datetime.now().strftime('%d-%m-%Y')
 
@@ -297,6 +299,8 @@ class Program: # this is controller (from MVC architecture.)
 
             exit_page = True
 
+        self.view_service.clear_error_message()
+
         #8. bring data to display page
         if response == 'R':
             self.run_search_page()
@@ -386,6 +390,8 @@ class Program: # this is controller (from MVC architecture.)
                 continue
 
             exit_page = True
+
+        self.view_service.clear_error_message()
 
         #8. bring data to display page
         if response == 'R':
@@ -484,6 +490,8 @@ class Program: # this is controller (from MVC architecture.)
 
             exit_page = True
 
+        self.view_service.clear_error_message()
+
         #8. bring data to display page
         if response == 'R':
             self.run_search_page()
@@ -545,6 +553,8 @@ class Program: # this is controller (from MVC architecture.)
 
             exit_page = True
 
+        self.view_service.clear_error_message()
+
         #8. bring data to display page
         if response == 'R':
             self.run_search_page()
@@ -571,6 +581,8 @@ class Program: # this is controller (from MVC architecture.)
                 continue
 
             exit_page = True
+
+        self.view_service.clear_error_message()
 
         if response == 'a':
             self.run_search_by_date_page()
@@ -643,6 +655,8 @@ class Program: # this is controller (from MVC architecture.)
 
             elif response == 'R':
                 exit_page = True
+
+        self.view_service.clear_error_message()
 
         if response == 'R':
             self._clear_screen()

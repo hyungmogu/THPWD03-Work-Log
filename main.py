@@ -97,7 +97,7 @@ class Program: # this is controller (from MVC architecture.)
 
             exit_page = True
 
-
+        self.view_service.clear_error_message()
 
         if response == 'a':
             self.run_add_page()
@@ -153,6 +153,8 @@ class Program: # this is controller (from MVC architecture.)
 
                 output[prompt['model']] = response
                 correct = True
+
+            self.view_service.clear_error_message()
 
         output['date'] = datetime.datetime.now().strftime('%d-%m-%Y')
 
@@ -297,6 +299,8 @@ class Program: # this is controller (from MVC architecture.)
 
             exit_page = True
 
+        self.view_service.clear_error_message()
+
         #8. bring data to display page
         if response == 'R':
             self.run_search_page()
@@ -322,7 +326,7 @@ class Program: # this is controller (from MVC architecture.)
             output = 'CSV data is empty. Please return to main (R), and add an item.'
 
         if error_type == 'not_valid_response':
-            output = 'Please enter item in correct format (non-negative integer) or value (R)'
+            output = 'Please enter non-empty characters or value (R)'
 
         if error_type == 'empty_results':
             output = 'Retrieved result is empty.'
@@ -386,6 +390,8 @@ class Program: # this is controller (from MVC architecture.)
                 continue
 
             exit_page = True
+
+        self.view_service.clear_error_message()
 
         #8. bring data to display page
         if response == 'R':
@@ -484,6 +490,8 @@ class Program: # this is controller (from MVC architecture.)
 
             exit_page = True
 
+        self.view_service.clear_error_message()
+
         #8. bring data to display page
         if response == 'R':
             self.run_search_page()
@@ -545,6 +553,8 @@ class Program: # this is controller (from MVC architecture.)
 
             exit_page = True
 
+        self.view_service.clear_error_message()
+
         #8. bring data to display page
         if response == 'R':
             self.run_search_page()
@@ -571,6 +581,8 @@ class Program: # this is controller (from MVC architecture.)
                 continue
 
             exit_page = True
+
+        self.view_service.clear_error_message()
 
         if response == 'a':
             self.run_search_by_date_page()
@@ -643,6 +655,8 @@ class Program: # this is controller (from MVC architecture.)
 
             elif response == 'R':
                 exit_page = True
+
+        self.view_service.clear_error_message()
 
         if response == 'R':
             self._clear_screen()

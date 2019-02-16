@@ -199,6 +199,9 @@ class Program: # this is controller (from MVC architecture.)
     def _get_csv_data(self):
         return self.model_service.get_csv_data()
 
+    def _get_csv_data_by_lines(self):
+        return self.model_service.get_csv_data_by_lines()
+
     def _get_error_message_search_by_date_page(self, response, message_type):
         output = ''
 
@@ -307,7 +310,7 @@ class Program: # this is controller (from MVC architecture.)
         else:
             self.run_display_page('search_page', items)
 
-    def _sanitize_response(response):
+    def _sanitize_response(self, response):
         # for each reserved character, replace it with \Character or \s if it's a space
         reserved_chrs = ['.','^',' ', '$', '*', '+', '?', '|']
 
@@ -336,11 +339,11 @@ class Program: # this is controller (from MVC architecture.)
 
     def run_search_by_exact_search_page(self):
         self.view_service.page_title = 'Search Page'
-        data = self._get_csv_data()
+        data = self._get_csv_data_by_lines()
         exit_page = False
         items = []
 
-        if len(data.strip()) == 0:
+        if len(data) == 0:
             self.view_service.error_message = self._get_error_message_search_by_exact_search_page('', 'empty_data')
 
         while not exit_page:
@@ -367,7 +370,7 @@ class Program: # this is controller (from MVC architecture.)
                 continue
 
             #6. If data is empty, then raise error saying data is empty, so try again once it has been added
-            if len(data.strip()) == 0:
+            if len(data) == 0:
                 self.view_service.error_message = self._get_error_message_search_by_exact_search_page('', 'empty_data')
                 continue
 
@@ -375,14 +378,27 @@ class Program: # this is controller (from MVC architecture.)
             response = self._sanitize_response(response)
 
             # 7. Grab all results by exact string in task name or notes
-            # results = re.finditer(r'''
-            #     ^(?P<date>\d{{2}}\-\d{{2}}\-\d{{4}})\,
-            #     (?P<task_name>.*)\,
-            #     (?P<time_amt>{})\,
-            #     (?P<notes>.*)\r$
-            # '''.format(response), data, re.X|re.M)
+            for entry in data:
+                result_1 = re.search(r'''
+                    ^(?P<date>\d{{2}}\-\d{{2}}\-\d{{4}})\,
+                    (?P<task_name>{})\,?
+                    (?P<time_amt>\d+)\,
+                    (?P<notes>.*)?$
+                '''.format(response), entry, re.X|re.M)
 
-            # items = [x.groupdict() for x in results]
+                result_2 = re.search(r'''
+                    ^(?P<date>\d{{2}}\-\d{{2}}\-\d{{4}})\,
+                    (?P<task_name>.*)\,?
+                    (?P<time_amt>\d+)\,
+                    (?P<notes>{})?$
+                '''.format(response), entry, re.X|re.M)
+
+                if result_1:
+                    items.append(result_1.groupdict())
+                    continue
+
+                if result_2:
+                    items.append(result_2.groupdict())
 
             # 8. Once grabbed, check and see if it has length equal to zero. If so, then raise error saying nothing found
             if len(items) == 0:

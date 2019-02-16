@@ -18,3 +18,13 @@ class ModelService:
             output = ''
 
         return output
+
+    def get_csv_data_by_lines(self):
+        try:
+            with open('work_log.csv','r') as csvFile:
+                output = [ x.strip() for x in csvFile.readlines()]
+        except IOError:
+            output = []
+
+        return output
+

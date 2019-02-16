@@ -334,7 +334,7 @@ class Program: # this is controller (from MVC architecture.)
                 self.view_service.error_message = self._get_error_message_search_by_date_page('', 'empty_data')
                 continue
 
-            # 7. If not r and date in correct format, then grab all items by the date
+            # 7. fetch result
             results = re.finditer(r'''
                 ^(?P<date>{})\,
                 (?P<task_name>.*)\,
@@ -432,7 +432,7 @@ class Program: # this is controller (from MVC architecture.)
                 self.view_service.error_message = self._get_error_message_search_by_time_spent_page('', 'empty_data')
                 continue
 
-            # 7. If not r and date in correct format, then grab all items by the date
+            # 7. fetch all results
             results = re.finditer(r'''
                     ^(?P<date>\d{{2}}\-\d{{2}}\-\d{{4}})\,
                     (?P<task_name>.*)\,

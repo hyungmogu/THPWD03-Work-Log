@@ -315,8 +315,9 @@ class Program: # this is controller (from MVC architecture.)
         reserved_chrs = ['.','^',' ', '$', '*', '+', '?', '|']
 
         for character in reserved_chrs:
-            rgx = '\{}'.format(character)
-            response = re.sub(r'{}'.format(rgx), '\\{}'.format(character) if character != ' ' else '\\s', response)
+            rgx_search = '\{}'.format(character) if character != ' ' else '\s'
+            rgx_reformat = r'\\{}'.format(character) if character != ' ' else r'\\s'
+            response = re.sub(r'{}'.format(rgx_search), rgx_reformat, response)
         return response
 
     def _is_response_valid_search_by_exact_search_page(self, response):

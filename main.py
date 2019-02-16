@@ -434,11 +434,11 @@ class Program: # this is controller (from MVC architecture.)
 
             # 7. If not r and date in correct format, then grab all items by the date
             results = re.finditer(r'''
-                ^(?P<date>\d{{2}}\-\d{{2}}\-\d{{4}})\,
-                (?P<task_name>.*)\,
-                (?P<time_amt>{})\,
-                (?P<notes>.*)\r$
-            '''.format(response), data, re.X|re.M)
+                    ^(?P<date>\d{{2}}\-\d{{2}}\-\d{{4}})\,
+                    (?P<task_name>.*)\,
+                    (?P<time_amt>{})\,
+                    (?P<notes>.*)$
+                '''.format(response), data, re.X|re.M)
 
             items = [x.groupdict() for x in results]
 

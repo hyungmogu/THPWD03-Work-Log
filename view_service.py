@@ -55,7 +55,7 @@ class ViewService:
 
         print("Please enter full date (dd-mm-yyyy):\n")
 
-        print("[R] Return to Main Page\n")
+        print("[R] Return to Search Page\n")
 
         self._get_error_message()
 
@@ -64,7 +64,7 @@ class ViewService:
 
         print("Please enter amount of time (Non-negative integer):\n")
 
-        print("[R] Return to Main Page\n")
+        print("[R] Return to Search Page\n")
 
         self._get_error_message()
 
@@ -73,7 +73,7 @@ class ViewService:
 
         print("Please enter exact string:\n")
 
-        print("[R] Return to Main Page\n")
+        print("[R] Return to Search Page\n")
 
         self._get_error_message()
 

@@ -27,7 +27,6 @@ class ViewService:
 
         self._get_error_message()
 
-
     def get_add_page(self, prompt_phrase):
         self._get_header()
 
@@ -68,10 +67,14 @@ class ViewService:
 
         self._get_error_message()
 
-    def get_search_by_exact_search_page(self):
+    def get_search_by_regex_or_exact_words_page(self, search_type):
         self._get_header()
 
-        print("Please enter exact string:\n")
+        if search_type == 'exact_words':
+            print("Please enter exact string:\n")
+
+        if search_type == 'regex':
+            print("Please enter regex pattern:\n")
 
         print("[R] Return to Search Page\n")
 

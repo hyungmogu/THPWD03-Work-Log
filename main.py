@@ -17,8 +17,8 @@
             NOTE:
             a) [x] When finding by date, I should be presented with a list of dates with entries and be able to choose one to see entries from.
             b) [x] When finding by time spent, I should be allowed to enter the number of minutes a task took and be able to choose one to see entries from.
-            c) [] When finding by an exact string, I should be allowed to enter a string and then be presented with entries containing that string in the task name or notes.
-            d) [] When finding by a pattern, I should be allowed to enter a regular expression and then be presented with entries matching that pattern in their task name or notes.
+            c) [x] When finding by an exact string, I should be allowed to enter a string and then be presented with entries containing that string in the task name or notes.
+            d) [x] When finding by a pattern, I should be allowed to enter a regular expression and then be presented with entries matching that pattern in their task name or notes.
             e) [x] When displaying the entries, the entries should be displayed in a readable format with the date, task name, time spent, and notes information.
 
 '''
@@ -242,10 +242,10 @@ class Program: # this is controller (from MVC architecture.)
             self.run_search_by_time_spent_page()
 
         elif response == 'c':
-            self.run_search_by_exact_search_page()
+            self.run_search_by_regex_or_exact_words_page('exact_words')
 
         elif response == 'd':
-            self.run_find_by_the_pattern_page()
+            self.run_search_by_regex_or_exact_words_page('regex')
 
         elif response == 'e':
             self._clear_screen()
@@ -334,7 +334,7 @@ class Program: # this is controller (from MVC architecture.)
                 self.view_service.error_message = self._get_error_message_search_by_date_page('', 'empty_data')
                 continue
 
-            # 7. If not r and date in correct format, then grab all items by the date
+            # 7. fetch result
             results = re.finditer(r'''
                 ^(?P<date>{})\,
                 (?P<task_name>.*)\,
@@ -432,7 +432,7 @@ class Program: # this is controller (from MVC architecture.)
                 self.view_service.error_message = self._get_error_message_search_by_time_spent_page('', 'empty_data')
                 continue
 
-            # 7. If not r and date in correct format, then grab all items by the date
+            # 7. fetch all results
             results = re.finditer(r'''
                     ^(?P<date>\d{{2}}\-\d{{2}}\-\d{{4}})\,
                     (?P<task_name>.*)\,
@@ -457,12 +457,12 @@ class Program: # this is controller (from MVC architecture.)
         else:
             self.run_display_page('search_page', items)
 
-    def _is_response_valid_search_by_exact_search_page(self, response):
+    def _is_response_valid_search_by_regex_or_exact_words_page(self, response):
         if response.strip() == '':
             return False
         return True
 
-    def _get_error_message_search_by_exact_search_page(self, response, error_type):
+    def _get_error_message_search_by_regex_or_exact_words_page(self, response, error_type):
         if error_type == 'empty_data':
             output = 'CSV data is empty. Please return to main (R), and add an item.'
 
@@ -474,21 +474,22 @@ class Program: # this is controller (from MVC architecture.)
 
         return output
 
-    def run_search_by_exact_search_page(self):
+    def run_search_by_regex_or_exact_words_page(self, search_type):
         self.view_service.page_title = 'Search Page'
         data = self._get_csv_data_by_lines()
         exit_page = False
         items = []
 
         if len(data) == 0:
-            self.view_service.error_message = self._get_error_message_search_by_exact_search_page('', 'empty_data')
+            self.view_service.error_message = self._get_error_message_search_by_regex_or_exact_words_page('', 'empty_data')
 
         while not exit_page:
+
             # 1. Clear screen
             self._clear_screen()
 
             #2. Load page
-            self.view_service.get_search_by_exact_search_page()
+            self.view_service.get_search_by_regex_or_exact_words_page(search_type)
 
             #3. Load prompt
             if sys.version_info < (3, 0):
@@ -497,8 +498,8 @@ class Program: # this is controller (from MVC architecture.)
                 response = input("> ").strip()
 
             #4. if data not empty and response typed, check and see if typed value is correct
-            if not self._is_response_valid_search_by_exact_search_page(response):
-                self.view_service.error_message = self._get_error_message_search_by_exact_search_page(response, 'not_valid_response')
+            if not self._is_response_valid_search_by_regex_or_exact_words_page(response):
+                self.view_service.error_message = self._get_error_message_search_by_regex_or_exact_words_page(response, 'not_valid_response')
                 continue
 
             # 5. if response is 'R', then return to search page
@@ -508,24 +509,25 @@ class Program: # this is controller (from MVC architecture.)
 
             #6. If data is empty, then raise error saying data is empty, so try again once it has been added
             if len(data) == 0:
-                self.view_service.error_message = self._get_error_message_search_by_exact_search_page('', 'empty_data')
+                self.view_service.error_message = self._get_error_message_search_by_regex_or_exact_words_page('', 'empty_data')
                 continue
 
-            # 8. Sanitize response if it has regex reserved characters
-            response = self._sanitize_response(response)
+            # 8. Sanitize response if it has regex reserved characters (only when searching by exact words)
+            if search_type == 'exact_words':
+                response = self._sanitize_response(response)
 
             # 7. Grab all results by exact string in task name or notes
             for entry in data:
                 result_1 = re.search(r'''
                     ^(?P<date>\d{{2}}\-\d{{2}}\-\d{{4}})\,
-                    (?P<task_name>{})\,?
+                    (?P<task_name>{})?\,
                     (?P<time_amt>\d+)\,
                     (?P<notes>.*)?$
                 '''.format(response), entry, re.X|re.M)
 
                 result_2 = re.search(r'''
                     ^(?P<date>\d{{2}}\-\d{{2}}\-\d{{4}})\,
-                    (?P<task_name>.*)\,?
+                    (?P<task_name>.*)?\,
                     (?P<time_amt>\d+)\,
                     (?P<notes>{})?$
                 '''.format(response), entry, re.X|re.M)
@@ -539,7 +541,7 @@ class Program: # this is controller (from MVC architecture.)
 
             # 8. Once grabbed, check and see if it has length equal to zero. If so, then raise error saying nothing found
             if len(items) == 0:
-                self.view_service.error_message = self._get_error_message_search_by_exact_search_page(response, 'empty_results')
+                self.view_service.error_message = self._get_error_message_search_by_regex_or_exact_words_page(response, 'empty_results')
                 continue
 
             exit_page = True
@@ -581,6 +583,7 @@ class Program: # this is controller (from MVC architecture.)
         while not exit_page:
             # while quit page is not registered, allow users to navigate through items
             self._clear_screen()
+
             self.view_service.get_display_page(path, items, index)
 
             if sys.version_info < (3, 0):

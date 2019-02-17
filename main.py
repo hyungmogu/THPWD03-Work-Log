@@ -520,14 +520,14 @@ class Program: # this is controller (from MVC architecture.)
             for entry in data:
                 result_1 = re.search(r'''
                     ^(?P<date>\d{{2}}\-\d{{2}}\-\d{{4}})\,
-                    (?P<task_name>{})\,?
+                    (?P<task_name>{})?\,
                     (?P<time_amt>\d+)\,
                     (?P<notes>.*)?$
                 '''.format(response), entry, re.X|re.M)
 
                 result_2 = re.search(r'''
                     ^(?P<date>\d{{2}}\-\d{{2}}\-\d{{4}})\,
-                    (?P<task_name>.*)\,?
+                    (?P<task_name>.*)?\,
                     (?P<time_amt>\d+)\,
                     (?P<notes>{})?$
                 '''.format(response), entry, re.X|re.M)
@@ -582,8 +582,7 @@ class Program: # this is controller (from MVC architecture.)
 
         while not exit_page:
             # while quit page is not registered, allow users to navigate through items
-            # self._clear_screen()
-            print(items)
+            self._clear_screen()
 
             self.view_service.get_display_page(path, items, index)
 
